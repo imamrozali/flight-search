@@ -1,7 +1,7 @@
 # Flight Search
 
 Welcome to **Flight Search**! A modern web application that helps you discover and compare flights easily and quickly. Designed specifically for an enjoyable and efficient search experience.
-
+---
 ## Featured Features
 
 ### **Smart Search**
@@ -27,7 +27,7 @@ Welcome to **Flight Search**! A modern web application that helps you discover a
 - **Jest testing** with 100% coverage
 - **ESLint** for code consistency
 - **Prettier** for automatic formatting
-
+---
 ## Quick Start
 
 ### Prerequisites
@@ -57,7 +57,7 @@ npm run test:coverage # Tests with coverage report
 npm run build
 npm start
 ```
-
+---
 ## How to Use
 
 1. **Choose Destination** - Select departure and arrival airports
@@ -66,6 +66,7 @@ npm start
 4. **Compare Prices** - View detailed information for each flight
 5. **Book Tickets** - Click "Book" to start booking process
 
+---
 ## UI/UX Features
 
 ### Dark Mode
@@ -84,6 +85,7 @@ npm start
 - Optimized images with Next.js
 - Automatic code splitting
 
+---
 ## Tech Stack
 
 ### Frontend
@@ -112,29 +114,147 @@ npm start
 - **Next.js Optimization** - Built-in optimizations
 - **React.memo** - Component memoization
 
-## 🚀 CI/CD
-
-This project uses **GitHub Actions** for automated testing and deployment.
-
 ### Workflow Triggers
-- **Push** to `main` or `develop` branches
-- **Pull Request** targeting `main` or `develop` branches
+- **Push** to `main` branches
+- **Pull Request** targeting `main` branches
 
-### CI Pipeline Steps
-1. **Setup** - Node.js 18.x and 20.x (matrix testing)
-2. **Install** - `npm ci` for clean dependency installation
-3. **Lint** - `npm run lint` for code quality checks
-4. **Test** - `npm test` for unit test execution
 
-### Quality Gates
-- ✅ **ESLint**: No linting errors
-- ✅ **Jest**: All tests pass (18/18)
-- ✅ **TypeScript**: No compilation errors
+### CI Pipeline
 
-### Matrix Testing
-Tests run on multiple Node.js versions for compatibility:
-- Node.js 18.x (LTS)
-- Node.js 20.x (Current)
+* Runs on push and pull request to `main`
+* Steps:
+
+  1. Install dependencies (`npm ci`)
+  2. Lint (`npm run lint`)
+  3. Test (`npm test`)
+* Tested on Node.js 20.x
+
+
+---
+
+# Question Fixed 
+
+### Data Issues & Improvements
+
+This is a quick but important note about the current flight data. Overall, the data is solid and totally usable, but there are a few things worth cleaning up now to avoid headaches later — especially as frontend logic grows.
+
+
+### 1. `baggage` is still a free-form string
+
+Right now, `baggage` values look like:
+
+* `"1Piece"`
+* `"10Kg"`
+* `"20Kg"`
+
+This makes things harder when it comes to:
+
+* filtering (e.g. minimum 20kg)
+* sorting
+* doing any real calculation
+
+**Suggestion:**
+Use a more structured and predictable format.
+
+Example:
+
+```json
+"baggage": {
+  "type": "KG",
+  "value": 20
+}
+```
+
+Or at least:
+
+```json
+"baggageKg": 20
+```
+
+
+### 2. `price.original` is not always present
+
+Some flights include:
+
+```json
+"original": 1200000
+```
+
+but most of them don’t.
+
+This is fine as long as:
+
+* the field is treated as **optional** in the frontend
+* no logic assumes it will always exist
+
+**Note:**
+If consistency helps, setting `original: null` when there’s no discount could also work.
+
+### 3. `duration` should stay derived, not manual
+
+At the moment, `duration` matches the actual time difference between departure and arrival — including overnight flights.
+
+Just make sure going forward:
+
+* `duration` is calculated from time values
+* not manually hardcoded
+
+This helps prevent silent data issues that look correct at first glance.
+
+
+### 4. `date` and `time` are split
+
+Splitting `date` and `time` works and isn’t wrong.
+
+However, for:
+
+* sorting
+* comparisons
+* timezone handling
+
+having an ISO datetime field would make things safer and simpler.
+
+Example:
+
+```json
+"datetime": "2025-10-22T15:30:00+07:00"
+```
+
+### 5. IDs are fine, just keep them unique
+
+The `FL001` → `FLxxx` format works well for lists and React keys.
+
+Just make sure:
+
+* IDs don’t get duplicated
+* they stay unique if data is merged from multiple sources
+
+### TL;DR
+
+* The data is **good and usable** 
+* There’s a bit of technical debt worth fixing early
+* Main focus areas: **baggage structure** and **optional field handling**
+
+---
+
+#  Known Issue
+
+### External API Limitation
+
+The endpoint below may fail when accessed from external environments due to **strict Cloudflare protection**:
+
+```
+https://www.bookcabin.com/interview/questions.json
+```
+
+### Fallback Solution
+
+This fallback mechanism has already been implemented.
+If the external API request fails, the application automatically uses a local data source to ensure the app remains stable and functional.
+
+---
 
 ### Author : 
 Muhammad Imam Rozali
+
+---
